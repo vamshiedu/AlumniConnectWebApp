@@ -8,6 +8,7 @@ import messageRoutes from './routes/messageRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import cloudinary from 'cloudinary';
 import cors from 'cors';
+import networkRoutes from './routes/networkRoutes.js'
 
 dotenv.config({ path: './backend/.env' });
 const app=express();
@@ -40,6 +41,7 @@ app.use("/api/user",userRoutes);
 app.use("/api/post",postRoutes);
 app.use("/api/message",messageRoutes);
 app.use("/api/event",eventRoutes);
+app.use("/api/network",networkRoutes);
 const port=process.env.PORT;
 app.get("/",(req,res)=>{
     res.send("Hello");
