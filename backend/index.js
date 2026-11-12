@@ -14,20 +14,12 @@ dotenv.config({ path: './backend/.env' });
 const app=express();
 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: [
+        'http://localhost:3000',
+        'https://alumniconnect-coral.vercel.app',
+    ],
     credentials: true
 }));
-// const allowedOrigins = [
-//   'http://localhost:3000',
-//   'http://localhost:5173',
-//   'https://alumniconnect-coral.vercel.app',
-//   process.env.FRONTEND_URL,
-// ].filter(Boolean);
-
-// app.use(cors({
-//   origin: allowedOrigins,
-//   credentials: true,
-// }));
 
 connectDb();
 cloudinary.v2.config({
