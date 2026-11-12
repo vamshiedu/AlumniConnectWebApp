@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import Avatar from '../components/common/Avatar';
 import Button from '../components/common/Button';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import { messageService, authService } from '../services/auth';
+import { messageService, networkService } from '../services/auth';
 import { connectSocket } from '../services/socket';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -167,7 +167,7 @@ const Messages = () => {
     setLoadingUsers(true);
     const timer = setTimeout(async () => {
       try {
-        const data = await authService.getFollowing(userSearch);
+        const data = await networkService.getFollowing(userSearch);
         setUserResults(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Failed to load following:', error);
