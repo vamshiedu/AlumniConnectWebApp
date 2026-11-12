@@ -75,6 +75,21 @@ export const myProfile=TryCatch(async(req,res)=>{
     res.json(user);
 });
 
+// Return the accounts the logged-in user follows (used to start conversations).
+export const getFollowing=TryCatch(async(req,res)=>{
+    const search=(req.query.search||"").trim();
+    const me=await User.findById(req.user._id)
+        .select("following")
+        .populate({
+            path:"following",
+            select:"name avatar role department batch",
+            ...(search?{match:{name:{$regex:search,$options:"i"}}}:{})
+        })
+        .lean();
+    const following=(me?.following||[]).filter(Boolean);
+    res.json(following);
+});
+
 export const userProfile=TryCatch(async(req,res)=>{
     // Public view: only expose non-private fields (name, batch, branch, skills,
     // avatar/cover, bio, follow counts). Projects, about and endorsement details

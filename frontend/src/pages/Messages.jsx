@@ -6,6 +6,7 @@ import Avatar from '../components/common/Avatar';
 import Button from '../components/common/Button';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { messageService, authService } from '../services/auth';
+import { connectSocket } from '../services/socket';
 import { useAuth } from '../context/AuthContext';
 import {
   MagnifyingGlassIcon,
@@ -59,22 +60,34 @@ const Messages = () => {
     }
   }, []);
 
-  // Initial load + poll conversations so new messages appear without a refresh.
+  // Initial load; realtime updates arrive via socket.
   useEffect(() => {
     loadChats();
-    const interval = setInterval(loadChats, 5000);
-    return () => clearInterval(interval);
   }, [loadChats]);
 
-  // Poll the open conversation for incoming messages.
+  // Live updates: append incoming messages and refresh the conversation list.
+  useEffect(() => {
+    const socket = connectSocket();
+    if (!socket) return;
+
+    const handleNewMessage = ({ message, chatId }) => {
+      if (selectedRef.current?._id && chatId === selectedRef.current._id) {
+        setMessages((prev) =>
+          prev.some((m) => m._id === message._id) ? prev : [...prev, message]
+        );
+      }
+      loadChats();
+    };
+
+    socket.on('newMessage', handleNewMessage);
+    return () => socket.off('newMessage', handleNewMessage);
+  }, [loadChats]);
+
+  // Load messages when a conversation is opened.
   useEffect(() => {
     if (!selectedConversation?._id) return;
     setLoadingMessages(true);
     loadMessages(selectedConversation._id).finally(() => setLoadingMessages(false));
-    const interval = setInterval(() => {
-      if (selectedRef.current?._id) loadMessages(selectedRef.current._id);
-    }, 3000);
-    return () => clearInterval(interval);
   }, [selectedConversation?._id, loadMessages]);
 
   // Scroll to the newest message.
@@ -148,18 +161,18 @@ const Messages = () => {
     }
   };
 
-  // Look up real users to start a new conversation with.
+  // Load the people the user follows to start a new conversation with.
   useEffect(() => {
     if (!showNewModal) return;
     setLoadingUsers(true);
     const timer = setTimeout(async () => {
       try {
-        const data = await authService.getAllUsers(userSearch);
+        const data = await authService.getFollowing(userSearch);
         setUserResults(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error('Failed to load users:', error);
+        console.error('Failed to load following:', error);
         setUserResults([]);
-        toast.error(error.message || 'Could not load users. Is the server updated?');
+        toast.error(error.message || 'Could not load your following list.');
       } finally {
         setLoadingUsers(false);
       }
@@ -446,7 +459,7 @@ const Messages = () => {
                     </div>
                   ) : userResults.length === 0 ? (
                     <p className="py-6 text-center text-sm text-gray-500">
-                      No users found.
+                      You are not following anyone yet.
                     </p>
                   ) : (
                     userResults.map((u) => (

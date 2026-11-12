@@ -279,6 +279,16 @@ export const networkService = {
       throw error.response?.data || { message: 'Failed to get users' };
     }
   },
+
+  // List the accounts the current user follows (used in the "New message" modal)
+  getFollowing: async (search = '') => {
+    try {
+      const response = await api.get('/user/following', { params: { search } });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to get following' };
+    }
+  },
 };
 
 // Messaging services

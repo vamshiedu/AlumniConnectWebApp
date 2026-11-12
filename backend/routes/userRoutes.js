@@ -1,5 +1,5 @@
 import express from 'express';
-import { followAndUnfollowUser, loginUser, logoutUser, myProfile, registerUser, userProfile, updateProfile, endorseSkill, getAllUsers } from '../controllers/userControllers.js';
+import { followAndUnfollowUser, loginUser, logoutUser, myProfile, registerUser, userProfile, updateProfile, endorseSkill, getAllUsers, getFollowing } from '../controllers/userControllers.js';
 import { isAuth } from '../middlewares/isAuth.js';
 import { globalSearch } from '../controllers/searchController.js';
 
@@ -9,6 +9,7 @@ router.post("/register",registerUser);
 router.post("/login",loginUser);
 router.get("/me",isAuth,myProfile);
 router.get("/all",isAuth,getAllUsers);
+router.get("/following",isAuth,getFollowing);
 router.get("/logout",isAuth,logoutUser);
 router.put("/profile",isAuth,updateProfile);
 router.get("/search",isAuth,globalSearch)

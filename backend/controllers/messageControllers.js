@@ -83,5 +83,13 @@ export const sendMessage = TryCatch(async (req, res) => {
   chat.latestMessage = { text: text.trim(), sender: req.user._id };
   await chat.save();
 
+  // Push the new message live to the recipient. The sender already renders it
+  // optimistically, so echoing it back would duplicate it on their screen.
+  const io = req.app.get("io");
+  if (io) {
+    const payload = { message, chatId: chat._id.toString() };
+    io.to(`user:${recipientId}`).emit("newMessage", payload);
+  }
+
   res.status(201).json({ message, chatId: chat._id });
 });
